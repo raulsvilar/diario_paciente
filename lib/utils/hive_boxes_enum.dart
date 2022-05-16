@@ -1,0 +1,4 @@
+enum HiveBoxesEnum {
+  dayActivities,
+  appointments,
+}

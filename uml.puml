@@ -1,0 +1,360 @@
+@startuml
+set namespaceSeparator ::
+
+class "diario_paciente::ui::list_item.dart::ListItem" {
+  +TimeOfDay time
+  +String subtitle
+  +void Function() onPressedDelete
+  +Widget build()
+}
+
+"diario_paciente::ui::list_item.dart::ListItem" o-- "flutter::src::material::time.dart::TimeOfDay"
+"diario_paciente::ui::list_item.dart::ListItem" o-- "dart::ui::void Function()"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "diario_paciente::ui::list_item.dart::ListItem"
+
+class "diario_paciente::home::utils::symptoms_level_enum.dart::SymptomsLevelEnum" {
+  +int index
+  {static} +List<SymptomsLevelEnum> values
+  {static} +SymptomsLevelEnum mild
+  {static} +SymptomsLevelEnum moderate
+  {static} +SymptomsLevelEnum severe
+}
+
+"diario_paciente::home::utils::symptoms_level_enum.dart::SymptomsLevelEnum" o-- "diario_paciente::home::utils::symptoms_level_enum.dart::SymptomsLevelEnum"
+"dart::core::Enum" <|-- "diario_paciente::home::utils::symptoms_level_enum.dart::SymptomsLevelEnum"
+
+class "diario_paciente::home::data::datasources::day_activities_datasource.dart::DayActivitiesDatasource" {
+  +void saveDayActivity()
+  +Future<List<DayActivityEntity>> loadDayActivities()
+  +void deleteDayActivity()
+}
+
+class "diario_paciente::home::data::repositories::day_activities_repository.dart::DayActivitiesRepository" {
+  -DayActivitiesDatasource _datasource
+  +Future<List<DayActivityEntity>> loadDayActivities()
+  +void saveDayActivity()
+  +void deleteDayActivity()
+}
+
+"diario_paciente::home::data::repositories::day_activities_repository.dart::DayActivitiesRepository" o-- "diario_paciente::home::data::datasources::day_activities_datasource.dart::DayActivitiesDatasource"
+"diario_paciente::home::domain::repositories::i_day_activities_repository.dart::IDayActivitiesRepository" <|-- "diario_paciente::home::data::repositories::day_activities_repository.dart::DayActivitiesRepository"
+
+class "diario_paciente::home::data::models::day_activity_model.dart::DayActivityModel" {
+  +bool usedMedicine
+  +String? annotations
+  +String? symptom
+  +String? symptomsLevel
+  +DateTime date
+}
+
+"diario_paciente::home::domain::entities::day_activity_entity.dart::DayActivityEntity" <|-- "diario_paciente::home::data::models::day_activity_model.dart::DayActivityModel"
+"hive::src::object::hive_object.dart::HiveObjectMixin" <|-- "diario_paciente::home::data::models::day_activity_model.dart::DayActivityModel"
+
+class "diario_paciente::home::data::models::day_activity_model.dart::DayActivityModelAdapter" {
+  +int typeId
+  +int hashCode
+  +DayActivityModel read()
+  +void write()
+  +bool ==()
+}
+
+"hive::hive.dart::TypeAdapter" <|-- "diario_paciente::home::data::models::day_activity_model.dart::DayActivityModelAdapter"
+
+abstract class "diario_paciente::home::domain::repositories::i_day_activities_repository.dart::IDayActivitiesRepository" {
+  +void saveDayActivity()
+  +Future<List<DayActivityEntity>> loadDayActivities()
+  +void deleteDayActivity()
+}
+
+class "diario_paciente::home::domain::usecases::delete_day_activity_usecase.dart::DeleteDayActivityUseCase" {
+  -IDayActivitiesRepository _repository
+  +void call()
+}
+
+"diario_paciente::home::domain::usecases::delete_day_activity_usecase.dart::DeleteDayActivityUseCase" o-- "diario_paciente::home::domain::repositories::i_day_activities_repository.dart::IDayActivitiesRepository"
+
+class "diario_paciente::home::domain::usecases::save_day_activity_usecase.dart::SaveDayActivitiesUseCase" {
+  -IDayActivitiesRepository _repository
+  +dynamic call()
+}
+
+"diario_paciente::home::domain::usecases::save_day_activity_usecase.dart::SaveDayActivitiesUseCase" o-- "diario_paciente::home::domain::repositories::i_day_activities_repository.dart::IDayActivitiesRepository"
+
+class "diario_paciente::home::domain::usecases::load_day_activities_usecase.dart::LoadDayActivitiesUseCase" {
+  -IDayActivitiesRepository _repository
+  +Future<List<DayActivityEntity>> call()
+}
+
+"diario_paciente::home::domain::usecases::load_day_activities_usecase.dart::LoadDayActivitiesUseCase" o-- "diario_paciente::home::domain::repositories::i_day_activities_repository.dart::IDayActivitiesRepository"
+
+class "diario_paciente::home::domain::entities::day_activity_entity.dart::DayActivityEntity" {
+  +bool usedMedicine
+  +String? annotations
+  +String? symptom
+  +String? symptomsLevel
+  +DateTime date
+  +List<Object?> props
+  +DayActivityEntity copyWith()
+  +String toString()
+  +bool isNotEmpty()
+}
+
+"equatable::src::equatable.dart::Equatable" <|-- "diario_paciente::home::domain::entities::day_activity_entity.dart::DayActivityEntity"
+
+class "diario_paciente::home::presentation::cubits::list_day_activities::list_day_activities_cubit.dart::ListDayActivitiesCubit" {
+  -LoadDayActivitiesUseCase _loadDayActivitiesUseCase
+  -SaveDayActivitiesUseCase _saveDayActivitiesUseCase
+  -DeleteDayActivityUseCase _deleteDayActivityUseCase
+  +void init()
+  +void changeDate()
+  +void addDayActivity()
+  +dynamic deleteDayActivity()
+}
+
+"diario_paciente::home::presentation::cubits::list_day_activities::list_day_activities_cubit.dart::ListDayActivitiesCubit" o-- "diario_paciente::home::domain::usecases::load_day_activities_usecase.dart::LoadDayActivitiesUseCase"
+"diario_paciente::home::presentation::cubits::list_day_activities::list_day_activities_cubit.dart::ListDayActivitiesCubit" o-- "diario_paciente::home::domain::usecases::save_day_activity_usecase.dart::SaveDayActivitiesUseCase"
+"diario_paciente::home::presentation::cubits::list_day_activities::list_day_activities_cubit.dart::ListDayActivitiesCubit" o-- "diario_paciente::home::domain::usecases::delete_day_activity_usecase.dart::DeleteDayActivityUseCase"
+"bloc::src::cubit.dart::Cubit" <|-- "diario_paciente::home::presentation::cubits::list_day_activities::list_day_activities_cubit.dart::ListDayActivitiesCubit"
+
+abstract class "diario_paciente::home::presentation::cubits::list_day_activities::list_day_activities_cubit.dart::ListDayActivitiesState" {
+  +DateTime date
+  +List<Object> props
+  +T? castOrNull()
+}
+
+"equatable::src::equatable.dart::Equatable" <|-- "diario_paciente::home::presentation::cubits::list_day_activities::list_day_activities_cubit.dart::ListDayActivitiesState"
+
+class "diario_paciente::home::presentation::cubits::list_day_activities::list_day_activities_cubit.dart::ListDayActivitiesInitial" {
+}
+
+"diario_paciente::home::presentation::cubits::list_day_activities::list_day_activities_cubit.dart::ListDayActivitiesState" <|-- "diario_paciente::home::presentation::cubits::list_day_activities::list_day_activities_cubit.dart::ListDayActivitiesInitial"
+
+class "diario_paciente::home::presentation::cubits::list_day_activities::list_day_activities_cubit.dart::ListDayActivitiesLoading" {
+}
+
+"diario_paciente::home::presentation::cubits::list_day_activities::list_day_activities_cubit.dart::ListDayActivitiesState" <|-- "diario_paciente::home::presentation::cubits::list_day_activities::list_day_activities_cubit.dart::ListDayActivitiesLoading"
+
+class "diario_paciente::home::presentation::cubits::list_day_activities::list_day_activities_cubit.dart::ListDayActivitiesLoaded" {
+  +List<DayActivityEntity> listDayActivity
+  +List<Object> props
+}
+
+"diario_paciente::home::presentation::cubits::list_day_activities::list_day_activities_cubit.dart::ListDayActivitiesState" <|-- "diario_paciente::home::presentation::cubits::list_day_activities::list_day_activities_cubit.dart::ListDayActivitiesLoaded"
+
+class "diario_paciente::home::presentation::cubits::description_form_dialog::description_form_dialog_cubit.dart::DescriptionFormDialogCubit" {
+  -DescriptionFormDialogData? _dataState
+  +void init()
+  +void changeSymptomsLevel()
+  +void changeUsedMedicine()
+  +void setAnnotations()
+  +void setSymptom()
+}
+
+"diario_paciente::home::presentation::cubits::description_form_dialog::description_form_dialog_cubit.dart::DescriptionFormDialogCubit" o-- "diario_paciente::home::presentation::cubits::description_form_dialog::description_form_dialog_cubit.dart::DescriptionFormDialogData"
+"bloc::src::cubit.dart::Cubit" <|-- "diario_paciente::home::presentation::cubits::description_form_dialog::description_form_dialog_cubit.dart::DescriptionFormDialogCubit"
+
+abstract class "diario_paciente::home::presentation::cubits::description_form_dialog::description_form_dialog_cubit.dart::DescriptionFormDialogState" {
+  +List<Object?> props
+  +T? castOrNull()
+}
+
+"equatable::src::equatable.dart::Equatable" <|-- "diario_paciente::home::presentation::cubits::description_form_dialog::description_form_dialog_cubit.dart::DescriptionFormDialogState"
+
+class "diario_paciente::home::presentation::cubits::description_form_dialog::description_form_dialog_cubit.dart::DescriptionFormDialogInitial" {
+}
+
+"diario_paciente::home::presentation::cubits::description_form_dialog::description_form_dialog_cubit.dart::DescriptionFormDialogState" <|-- "diario_paciente::home::presentation::cubits::description_form_dialog::description_form_dialog_cubit.dart::DescriptionFormDialogInitial"
+
+class "diario_paciente::home::presentation::cubits::description_form_dialog::description_form_dialog_cubit.dart::DescriptionFormDialogData" {
+  +DayActivityEntity? dayActivityEntity
+  +List<Object?> props
+}
+
+"diario_paciente::home::presentation::cubits::description_form_dialog::description_form_dialog_cubit.dart::DescriptionFormDialogData" o-- "diario_paciente::home::domain::entities::day_activity_entity.dart::DayActivityEntity"
+"diario_paciente::home::presentation::cubits::description_form_dialog::description_form_dialog_cubit.dart::DescriptionFormDialogState" <|-- "diario_paciente::home::presentation::cubits::description_form_dialog::description_form_dialog_cubit.dart::DescriptionFormDialogData"
+
+class "diario_paciente::home::presentation::list_day_activities.dart::ListDayActivities" {
+  +State<ListDayActivities> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "diario_paciente::home::presentation::list_day_activities.dart::ListDayActivities"
+
+class "diario_paciente::home::presentation::list_day_activities.dart::_ListDayActivitiesState" {
+  -ListDayActivitiesCubit _cubit
+  +void initState()
+  +Widget build()
+  -Widget _listDayActivities()
+  -void _showDatePicker()
+}
+
+"diario_paciente::home::presentation::list_day_activities.dart::_ListDayActivitiesState" o-- "diario_paciente::home::presentation::cubits::list_day_activities::list_day_activities_cubit.dart::ListDayActivitiesCubit"
+"flutter::src::widgets::framework.dart::State" <|-- "diario_paciente::home::presentation::list_day_activities.dart::_ListDayActivitiesState"
+
+class "diario_paciente::home::presentation::description_form_dialog.dart::DescriptionFormDialog" {
+  +DateTime date
+  +State<DescriptionFormDialog> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "diario_paciente::home::presentation::description_form_dialog.dart::DescriptionFormDialog"
+
+class "diario_paciente::home::presentation::description_form_dialog.dart::_DescriptionFormDialogState" {
+  -DescriptionFormDialogCubit _cubit
+  +void initState()
+  +Widget build()
+}
+
+"diario_paciente::home::presentation::description_form_dialog.dart::_DescriptionFormDialogState" o-- "diario_paciente::home::presentation::cubits::description_form_dialog::description_form_dialog_cubit.dart::DescriptionFormDialogCubit"
+"flutter::src::widgets::framework.dart::State" <|-- "diario_paciente::home::presentation::description_form_dialog.dart::_DescriptionFormDialogState"
+
+class "diario_paciente::home::presentation::widgets::drawer_menu.dart::DrawerMenus" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "diario_paciente::home::presentation::widgets::drawer_menu.dart::DrawerMenus"
+
+class "diario_paciente::appointments::data::datasources::appointments_datasource.dart::AppointmentsDatasource" {
+  +void saveAppointment()
+  +Future<List<AppointmentEntity>> loadAppointment()
+  +void deleteAppointment()
+}
+
+class "diario_paciente::appointments::data::repositories::appointments_repository.dart::AppointmentsRepository" {
+  -AppointmentsDatasource _datasource
+  +void deleteAppointment()
+  +Future<List<AppointmentEntity>> loadAppointments()
+  +void saveAppointment()
+}
+
+"diario_paciente::appointments::data::repositories::appointments_repository.dart::AppointmentsRepository" o-- "diario_paciente::appointments::data::datasources::appointments_datasource.dart::AppointmentsDatasource"
+"diario_paciente::appointments::domain::repositories::i_appointments_repository.dart::IAppointmentsRepository" <|-- "diario_paciente::appointments::data::repositories::appointments_repository.dart::AppointmentsRepository"
+
+class "diario_paciente::appointments::data::models::appointment_model.dart::AppointmentModel" {
+  +DateTime date
+  +String name
+  +String description
+}
+
+"diario_paciente::appointments::domain::entities::appointment_entity.dart::AppointmentEntity" <|-- "diario_paciente::appointments::data::models::appointment_model.dart::AppointmentModel"
+"hive::src::object::hive_object.dart::HiveObjectMixin" <|-- "diario_paciente::appointments::data::models::appointment_model.dart::AppointmentModel"
+
+class "diario_paciente::appointments::data::models::appointment_model.dart::AppointmentModelAdapter" {
+  +int typeId
+  +int hashCode
+  +AppointmentModel read()
+  +void write()
+  +bool ==()
+}
+
+"hive::hive.dart::TypeAdapter" <|-- "diario_paciente::appointments::data::models::appointment_model.dart::AppointmentModelAdapter"
+
+abstract class "diario_paciente::appointments::domain::repositories::i_appointments_repository.dart::IAppointmentsRepository" {
+  +Future<List<AppointmentEntity>> loadAppointments()
+  +void deleteAppointment()
+  +void saveAppointment()
+}
+
+class "diario_paciente::appointments::domain::usecases::load_appointments_usecase.dart::LoadAppointmentsUseCase" {
+  -IAppointmentsRepository _repository
+  +dynamic call()
+}
+
+"diario_paciente::appointments::domain::usecases::load_appointments_usecase.dart::LoadAppointmentsUseCase" o-- "diario_paciente::appointments::domain::repositories::i_appointments_repository.dart::IAppointmentsRepository"
+
+class "diario_paciente::appointments::domain::usecases::save_appointment_usecase.dart::SaveAppointmentUseCase" {
+  -IAppointmentsRepository _repository
+  +dynamic call()
+}
+
+"diario_paciente::appointments::domain::usecases::save_appointment_usecase.dart::SaveAppointmentUseCase" o-- "diario_paciente::appointments::domain::repositories::i_appointments_repository.dart::IAppointmentsRepository"
+
+class "diario_paciente::appointments::domain::usecases::delete_appointment_usecase.dart::DeleteAppointmentUseCase" {
+  -IAppointmentsRepository _repository
+  +dynamic call()
+}
+
+"diario_paciente::appointments::domain::usecases::delete_appointment_usecase.dart::DeleteAppointmentUseCase" o-- "diario_paciente::appointments::domain::repositories::i_appointments_repository.dart::IAppointmentsRepository"
+
+class "diario_paciente::appointments::domain::entities::appointment_entity.dart::AppointmentEntity" {
+  +DateTime date
+  +String name
+  +String description
+  +List<Object> props
+}
+
+"equatable::src::equatable.dart::Equatable" <|-- "diario_paciente::appointments::domain::entities::appointment_entity.dart::AppointmentEntity"
+
+class "diario_paciente::appointments::presentation::cubits::appointments_screen_cubit.dart::AppointmentsScreenCubit" {
+  +void changeDate()
+  +dynamic deleteAppointment()
+}
+
+"bloc::src::cubit.dart::Cubit" <|-- "diario_paciente::appointments::presentation::cubits::appointments_screen_cubit.dart::AppointmentsScreenCubit"
+
+abstract class "diario_paciente::appointments::presentation::cubits::appointments_screen_cubit.dart::AppointmentsScreenState" {
+  +DateTime date
+  +List<Object> props
+  +T? castOrNull()
+}
+
+"equatable::src::equatable.dart::Equatable" <|-- "diario_paciente::appointments::presentation::cubits::appointments_screen_cubit.dart::AppointmentsScreenState"
+
+class "diario_paciente::appointments::presentation::cubits::appointments_screen_cubit.dart::AppointmentsScreenInitial" {
+}
+
+"diario_paciente::appointments::presentation::cubits::appointments_screen_cubit.dart::AppointmentsScreenState" <|-- "diario_paciente::appointments::presentation::cubits::appointments_screen_cubit.dart::AppointmentsScreenInitial"
+
+class "diario_paciente::appointments::presentation::appointments_screen.dart::AppointmentsScreen" {
+  +State<AppointmentsScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "diario_paciente::appointments::presentation::appointments_screen.dart::AppointmentsScreen"
+
+class "diario_paciente::appointments::presentation::appointments_screen.dart::_AppointmentsScreenState" {
+  -AppointmentsScreenCubit _cubit
+  +void initState()
+  +Widget build()
+  -Widget _listDayActivities()
+  -void _showDatePicker()
+}
+
+"diario_paciente::appointments::presentation::appointments_screen.dart::_AppointmentsScreenState" o-- "diario_paciente::appointments::presentation::cubits::appointments_screen_cubit.dart::AppointmentsScreenCubit"
+"flutter::src::widgets::framework.dart::State" <|-- "diario_paciente::appointments::presentation::appointments_screen.dart::_AppointmentsScreenState"
+
+class "diario_paciente::config::hive_config.dart::HiveConfig" {
+  {static} +void setup()
+}
+
+class "diario_paciente::utils::app_strings.dart::AppStrings" {
+  {static} +String symptom
+  {static} +String symptomLevel
+  {static} +String severe
+  {static} +String moderate
+  {static} +String mild
+  {static} +String description
+  {static} +String usedMedicine
+  {static} +String annotations
+  {static} +String save
+  {static} +String yes
+  {static} +String no
+  {static} +String medicines
+  {static} +String appointments
+}
+
+class "diario_paciente::utils::hive_boxes_enum.dart::HiveBoxesEnum" {
+  +int index
+  {static} +List<HiveBoxesEnum> values
+  {static} +HiveBoxesEnum dayActivities
+  {static} +HiveBoxesEnum appointments
+}
+
+"diario_paciente::utils::hive_boxes_enum.dart::HiveBoxesEnum" o-- "diario_paciente::utils::hive_boxes_enum.dart::HiveBoxesEnum"
+"dart::core::Enum" <|-- "diario_paciente::utils::hive_boxes_enum.dart::HiveBoxesEnum"
+
+class "diario_paciente::main.dart::MyApp" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "diario_paciente::main.dart::MyApp"
+
+
+@enduml
